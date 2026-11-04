@@ -1,0 +1,27 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment: &env
+      REDIS_URL: redis://redis:6379/0
+      REMINDERS: celery
+      DB_PATH: /data/agendabot.db
+    volumes:
+      - dados:/data
+    depends_on:
+      - redis
+  worker:
+    build: .
+    command: celery -A app.tasks worker --loglevel=info
+    env_file: .env
+    environment: *env
+    volumes:
+      - dados:/data
+    depends_on:
+      - redis
+  redis:
+    image: redis:7-alpine
+volumes:
+  dados:
